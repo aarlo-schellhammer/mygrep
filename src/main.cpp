@@ -1,6 +1,9 @@
 #include <iostream>
 #include <string>
 #include <fstream>
+#include <algorithm>
+#include <cctype>
+#include <stdexcept>
 
 using namespace std;
 
@@ -9,43 +12,60 @@ struct SearchOptions
 {
     bool showLineNumbers;
     bool showOccurrenceCount;
+    bool caseInsensitive;
+    bool reverseSearch;
 };
 
 // Prototypes
 int Interactive();
 int FileSearch(const string &search, const string &filename, SearchOptions options);
+void PrintUsage();
 SearchOptions ParseOptions(const string &options);
 
 int main(int argc, char **argv)
 {
-    if (argc == 1)
+    try
     {
-        return Interactive();
-    }
-    else if (argc == 3)
-    {
-        string search = argv[1];
-        string filename = argv[2];
+        if (argc == 1)
+        {
+            return Interactive();
+        }
+        else if (argc == 3)
+        {
+            string search = argv[1];
+            string filename = argv[2];
 
-        SearchOptions opts{false, false}; // no options
-        return FileSearch(search, filename, opts);
-    }
-    else if (argc == 4)
-    {
-        string optStr = argv[1];
-        string search = argv[2];
-        string filename = argv[3];
+            SearchOptions opts{false, false, false, false}; // no options
+            return FileSearch(search, filename, opts);
+        }
+        else if (argc == 4)
+        {
+            string optStr = argv[1];
+            string search = argv[2];
+            string filename = argv[3];
 
-        SearchOptions opts = ParseOptions(optStr);
-        return FileSearch(search, filename, opts);
+            // Expect "-o<flags>" (allow "-o" with no flags too)
+            if (optStr.size() < 2 || optStr[0] != '-' || optStr[1] != 'o')
+            {
+                PrintUsage();
+                return 1;
+            }
+
+            SearchOptions opts = ParseOptions(optStr);
+            return FileSearch(search, filename, opts);
+        }
+        else
+        {
+            PrintUsage();
+            return 1;
+        }
     }
-    else
+    catch (const exception &e)
     {
-        cout << "Wrong usage, try:\n"
-             << "mygrep.exe\n"
-             << "mygrep.exe <search> <filename>\n"
-             << "mygrep.exe -o[lo] <search> <filename>\n";
-        return 1;
+        // Match typical assignment-style exception output more closely
+        cout << "Exception Nr. -1" << endl;
+        cout << e.what() << endl;
+        return -1;
     }
 }
 
@@ -68,7 +88,8 @@ int Interactive()
     }
     else
     {
-        cout << "\"" << search << "\" not found in \"" << source << "\"" << endl;
+        // Spec expects NOT uppercase
+        cout << "\"" << search << "\" NOT found in \"" << source << "\"" << endl;
     }
     return 0;
 }
@@ -78,8 +99,16 @@ int FileSearch(const string &search, const string &filename, SearchOptions optio
     ifstream file(filename);
     if (!file)
     {
-        cout << "Could not open the file \"" << filename << "\"\n";
-        return 1;
+        // Add period to match common exact-output specs
+        throw runtime_error("Could not open the file \"" + filename + "\".");
+    }
+
+    string searchToCheck = search;
+    if (options.caseInsensitive)
+    {
+        transform(searchToCheck.begin(), searchToCheck.end(), searchToCheck.begin(),
+                  [](unsigned char c)
+                  { return static_cast<char>(tolower(c)); });
     }
 
     string line;
@@ -90,7 +119,21 @@ int FileSearch(const string &search, const string &filename, SearchOptions optio
     {
         lineNumber++;
 
-        if (line.find(search) != string::npos)
+        string lineToCheck = line;
+        if (options.caseInsensitive)
+        {
+            transform(lineToCheck.begin(), lineToCheck.end(), lineToCheck.begin(),
+                      [](unsigned char c)
+                      { return static_cast<char>(tolower(c)); });
+        }
+
+        bool match = (lineToCheck.find(searchToCheck) != string::npos);
+        if (options.reverseSearch)
+        {
+            match = !match;
+        }
+
+        if (match)
         {
             count++;
 
@@ -98,14 +141,20 @@ int FileSearch(const string &search, const string &filename, SearchOptions optio
             {
                 cout << lineNumber << ": ";
             }
-
             cout << line << endl;
         }
     }
 
     if (options.showOccurrenceCount)
     {
-        cout << "Occurrences of lines containing \"" << search << "\": " << count << endl;
+        if (options.reverseSearch)
+        {
+            cout << "Occurrences of lines NOT containing \"" << search << "\": " << count << endl;
+        }
+        else
+        {
+            cout << "Occurrences of lines containing \"" << search << "\": " << count << endl;
+        }
     }
 
     return 0;
@@ -113,18 +162,37 @@ int FileSearch(const string &search, const string &filename, SearchOptions optio
 
 SearchOptions ParseOptions(const string &options)
 {
-    SearchOptions opts{false, false};
+    SearchOptions opts{false, false, false, false};
 
+    // options format is "-o<flags>", flags start at index 2
     for (auto i = 2; i < options.length(); i++)
     {
-        if (options[i] == 'l')
+        switch (options[i])
         {
+        case 'l':
             opts.showLineNumbers = true;
-        }
-        else if (options[i] == 'o')
-        {
+            break;
+        case 'o':
             opts.showOccurrenceCount = true;
+            break;
+        case 'i':
+            opts.caseInsensitive = true;
+            break;
+        case 'r':
+            opts.reverseSearch = true;
+            break;
+        default:
+            throw runtime_error(string("Option not recognized: '") + options[i] + "'");
         }
     }
     return opts;
+}
+
+void PrintUsage()
+{
+    cout << "Wrong usage, try:\n"
+         << "mygrep.exe\n"
+         << "mygrep.exe <search> <filename>\n"
+         << "mygrep.exe -o<flags> <search> <filename>\n"
+         << "flags: l (line numbers), o (count), i (ignore case), r (reverse)\n";
 }
