@@ -159,16 +159,14 @@ int FileSearch(const string &search, const string &filename, SearchOptions optio
             {
                 cout << lineNumber << ": ";
             }
-            // If no matches found for search string
-            if (count == 0)
-            {
-                cout << "No matches found for \"" << search << "\"" << endl;
-            }
-            else
-            {
-                cout << line << endl;
-            }
+
+            cout << line << endl;
         }
+    }
+    // If no matches found for search string
+    if (count == 0 && !options.showOccurrenceCount)
+    {
+        cout << "No matches found for \"" << search << "\"" << endl;
     }
     // Print total occurrence count if 'o' flag is used
     if (options.showOccurrenceCount)
