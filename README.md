@@ -24,4 +24,4 @@ It allows users to search for text within files using various command-line optio
 Run the program without arguments:
 
 ```bash
-mygrep.exe
+g++ mygrep.cpp -o mygrep
