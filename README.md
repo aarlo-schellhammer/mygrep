@@ -94,3 +94,9 @@ Try:
     10: 123 hello 456
 
     Occurrences of lines containing "hello": 5
+
+---
+
+## AI Usage
+
+AI tools were used to improve documentation and assist with debugging. The program itself is implemented independently, and all code is written and understood by me :O
