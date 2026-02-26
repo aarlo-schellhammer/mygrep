@@ -17,11 +17,48 @@ It allows users to search for text within files using various command-line optio
 
 ---
 
+## Program Structure
+
+The program consists of the following main components:
+
+- **Main function**: Handles command-line arguments and execution flow  
+- **Option parsing**: Processes flags given with `-o`  
+- **File handling**: Opens and reads the file line by line  
+- **Search logic**: Compares each line to the search string  
+- **Output handling**: Formats output based on selected flags  
+
+### Processing steps
+
+```
+Start
+ ↓
+Read command-line arguments
+ ↓
+Parse options (-o flags)
+ ↓
+IF file given:
+    Open file
+    FOR each line:
+        Check match
+        Apply options (i, l, o, r)
+        Print result
+ELSE:
+    Run interactive mode
+ ↓
+End
+```
+
+---
+
 ## Build
 
 Compile the program:
 
-    g++ mygrep.cpp -o mygrep
+```
+g++ main.cpp -o mygrep
+```
+
+The program compiles without errors or warnings.
 
 ---
 
@@ -31,72 +68,96 @@ Compile the program:
 
 Run without arguments:
 
-    ./mygrep
-
-You will be prompted to enter:
-- Source string  
-- Search string  
+```
+./mygrep
+```
 
 ---
 
 ### File search
 
-Search for a string inside a file:
-
-    ./mygrep <search> <filename>
+```
+./mygrep <search> <filename>
+```
 
 Example:
 
-    ./mygrep hello example.txt
+```
+./mygrep hello example.txt
+```
 
 ---
 
 ### Using options
 
-All options must start with -o followed by one or more flags:
-
-    ./mygrep -o<flags> <search> <filename>
+```
+./mygrep -o<flags> <search> <filename>
+```
 
 ### Available flags
 
 - l → Show line numbers  
 - o → Show total occurrence count  
 - i → Case-insensitive search  
-- r → Reverse search (lines NOT containing the string)  
+- r → Reverse search  
 
 ---
 
 ### Examples
 
-    ./mygrep -ol hello example.txt
-    ./mygrep -oi hello example.txt
-    ./mygrep -or hello example.txt
-    ./mygrep -oli hello example.txt
+```
+./mygrep -ol hello example.txt
+./mygrep -oi hello example.txt
+./mygrep -or hello example.txt
+./mygrep -oli hello example.txt
+```
 
 ---
 
-## Test File
+## Testing
 
-An example file (`example.txt`) is included in the repository for quick testing.
+The program was tested using the included `example.txt` file.
 
-Try:
+Example test:
 
-    ./mygrep -oi hello example.txt
+```
+./mygrep -oi hello example.txt
+```
+
+Output:
+
+```
+1: Hello world
+4: hello again
+6: HELLO uppercase
+8: Another hello here
+10: 123 hello 456
+
+Occurrences of lines containing "hello": 5
+```
+
+The results match the expected output, confirming correct functionality.
 
 ---
 
-## Example Output
+## Learning
 
-    1: Hello world
-    4: hello again
-    6: HELLO uppercase
-    8: Another hello here
-    10: 123 hello 456
+During this project, I learned how to handle command-line arguments in C++, process text files line by line, and implement flexible program behavior using flags. I also improved my understanding of string handling and debugging.
 
-    Occurrences of lines containing "hello": 5
+---
+
+## Increments
+
+Implemented increments:
+- Increment 1  
+- Increment 2  
+- Increment 3  
+- Increment 4  
+
+Target grade: **5 points**
 
 ---
 
 ## AI Usage
 
-AI tools were used to improve documentation and assist with debugging. The program itself is implemented independently, and all code is written and understood by me :O
+AI tools were used to support understanding of certain concepts, assist with debugging, and improve the documentation. The program itself is implemented independently, and all code is written and understood by the author.
