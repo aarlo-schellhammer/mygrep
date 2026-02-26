@@ -1,0 +1,11 @@
+Hello world
+This is a test file
+
+hello again
+C++ is fun
+HELLO uppercase
+Nothing to see here
+Another hello here
+
+123 hello 456
+Special characters !@#$
